@@ -15,17 +15,14 @@ cloudinary.v2.config({
 
 const app = express();
 
-// using middlewares
 app.use(express.json());
 app.use(cookieParser());
 
 const port = process.env.PORT;
 
-//importing routes
 import userRoutes from "./routes/userRoutes.js";
 import songRoutes from "./routes/songRoutes.js";
 
-//using routes
 app.use("/api/user", userRoutes);
 app.use("/api/song", songRoutes);
 
