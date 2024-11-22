@@ -1,80 +1,93 @@
-import User from "../models/User.js";
+import { User } from "../models/User.js";
+import TryCatch from "../utils/TryCatch.js";
 import bcrypt from "bcrypt";
 import generateToken from "../utils/generateToken.js";
-export const registerUser = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    let user = await User.findOne({ email });
 
-    if (user) {
-      return res.status(400).json({ message: "user already exists" });
-    }
+export const registerUser = TryCatch(async (req, res) => {
+  const { name, email, password } = req.body;
 
-    const hashPassword = await bcrypt.hash(password, 10);
+  let user = await User.findOne({ email });
 
-    user = await User.create({
-      name,
-      email,
-      password: hashPassword,
+  if (user)
+    return res.status(400).json({
+      message: "User Already Exists",
     });
 
-    generateToken(user._id, res);
+  const hashPassword = await bcrypt.hash(password, 10);
 
-    res.status(201).json({
-      user,
-      message: "User Registered",
+  user = await User.create({
+    name,
+    email,
+    password: hashPassword,
+  });
+
+  generateToken(user._id, res);
+
+  res.status(201).json({
+    user,
+    message: "User Registered",
+  });
+});
+
+export const loginUser = TryCatch(async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user)
+    return res.status(400).json({
+      message: "No User Exist",
     });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ error: `problem in registeruser controller ${err}` });
-  }
-};
 
-export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const comparePassword = await bcrypt.compare(password, user.password);
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({
-        message: "No user exists",
-      });
-    }
-
-    const comparepassword = await bcrypt.compare(password, user.password);
-    if (!comparepassword) {
-      return res.status(400).json({
-        message: "wriong password",
-      });
-    }
-
-    generateToken(user._id, res);
-    res.status(200).json({
-      user,
-      message: "user successfully logged in",
+  if (!comparePassword)
+    return res.status(400).json({
+      message: "Wrong Password",
     });
-  } catch (err) {
-    res.status(500).json({ error: `problem in loginUser controller ${err}` });
-  }
-};
 
-export const myProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: `problem in myProfile controller ${err}` });
-  }
-};
+  generateToken(user._id, res);
 
-export const logout = (req, res) => {
-  try {
-    res.cookie("token", "", { maxAge: 0 });
-    res.json({
-      message: "logged out successfully",
+  res.status(200).json({
+    user,
+    message: "User LoggedIN",
+  });
+});
+
+export const myProfile = TryCatch(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  res.json(user);
+});
+
+export const logoutUser = TryCatch(async (req, res) => {
+  res.cookie("token", "", { maxAge: 0 });
+
+  res.json({
+    message: "Logged Out Successfully",
+  });
+});
+
+export const saveToPlaylist = TryCatch(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user.playlist.includes(req.params.id)) {
+    const index = user.playlist.indexOf(req.params.id);
+
+    user.playlist.splice(index, 1);
+
+    await user.save();
+
+    return res.json({
+      message: "Removed from playlist",
     });
-  } catch (err) {
-    res.status(500).json({ error: `problem in logout controller ${err}` });
   }
-};
+
+  user.playlist.push(req.params.id);
+
+  await user.save();
+
+  return res.json({
+    message: "added to playlist",
+  });
+});

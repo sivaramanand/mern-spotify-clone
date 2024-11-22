@@ -22,7 +22,7 @@ export const isAuth = async (req, res, next) => {
     next();
   } catch (error) {
     res.status(500).json({
-      message: `Please Login and error is ${error}`,
+      message: "Please Login",
     });
   }
 };

@@ -1,25 +1,43 @@
 import express from "express";
-import dontenv from "dotenv";
+import dotenv from "dotenv";
+import {connectToDB} from "./database/db.js";
 import cookieParser from "cookie-parser";
-import userRouter from "./routes/userRoutes.js";
-import songRouter from "./routes/songRoutes.js";
-import { connectToDB } from "./database/db.js";
 import cloudinary from "cloudinary";
+import path from "path";
+
+dotenv.config();
 
 cloudinary.v2.config({
-  cloud_name: process.env.cloudName,
-  api_key: process.env.apiKey,
-  api_secret: process.env.apiSecret,
+  cloud_name: process.env.Cloud_Name,
+  api_key: process.env.Cloud_Api,
+  api_secret: process.env.Cloud_Secret,
 });
+
 const app = express();
+
+// using middlewares
 app.use(express.json());
-dontenv.config();
 app.use(cookieParser());
 
 const port = process.env.PORT;
-app.use("/api/user", userRouter);
+
+//importing routes
+import userRoutes from "./routes/userRoutes.js";
+import songRoutes from "./routes/songRoutes.js";
+
+//using routes
+app.use("/api/user", userRoutes);
+app.use("/api/song", songRoutes);
+
+const __dirname = path.resolve();
+
+app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+});
 
 app.listen(port, () => {
-  console.log(`server running at ${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
   connectToDB();
 });

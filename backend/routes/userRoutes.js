@@ -1,17 +1,19 @@
 import express from "express";
-import dontenv from "dotenv";
 import {
   loginUser,
-  registerUser,
+  logoutUser,
   myProfile,
-  logout,
+  registerUser,
+  saveToPlaylist,
 } from "../controllers/userControllers.js";
 import { isAuth } from "../middlewares/isAuth.js";
-const userRouter = express.Router();
 
-userRouter.post("/register", registerUser);
-userRouter.post("/login", loginUser);
-userRouter.get("/me", isAuth, myProfile);
-userRouter.post("/logout", logout);
+const router = express.Router();
 
-export default userRouter;
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.get("/me", isAuth, myProfile);
+router.get("/logout", isAuth, logoutUser);
+router.post("/song/:id", isAuth, saveToPlaylist);
+
+export default router;

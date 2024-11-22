@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const albumschema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -15,7 +15,9 @@ const albumschema = new mongoose.Schema(
       url: String,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-export const Album = mongoose.model("Album", albumschema);
+export const Album = mongoose.model("Album", schema);
