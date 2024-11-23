@@ -34,6 +34,8 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
 });
 
+console.log("environment variables", process.env.Jwt_Secret)
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   connectToDB();
